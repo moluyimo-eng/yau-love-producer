@@ -301,7 +301,7 @@
     <div class="formula-overlay line2" id="formula2">c₁(X) = 0</div>
     <!-- Status -->
     <div class="status-bar">
-      好感 <span id="aff-val">30</span> &nbsp;|&nbsp; 数学 <span id="math-val">0/0</span>
+      好感 <span id="aff-val">0</span> &nbsp;|&nbsp; 数学 <span id="math-val">0/0</span>
       <span class="pikachu-mascot" id="pikachu-mascot"></span>
     </div>
     <!-- Name tag -->
@@ -536,7 +536,7 @@ const $chalkboard = document.getElementById('chalkboard');
 const $cafeWindow = document.getElementById('cafe-window');
 const $particles = document.getElementById('particles');
 
-let affection = 30, mathCorrect = 0, mathTotal = 0;
+let affection = 0, mathCorrect = 0, mathTotal = 0;
 let currentScene = 'start', awaitingInput = false;
 let history = [];
 let resolvedEnding = null; // track which ending scene was determined
@@ -1203,9 +1203,9 @@ async function handleScene(sceneId) {
 }
 
 function determineEnding() {
-  if (affection >= 70 && mathCorrect >= 2) resolvedEnding = 'ending_calabi_yau';
-  else if (affection >= 45 && mathCorrect >= 1) resolvedEnding = 'ending_scholar';
-  else if (affection >= 25) resolvedEnding = 'ending_dream';
+  if (affection >= 65 && mathCorrect >= 2) resolvedEnding = 'ending_calabi_yau';
+  else if (affection >= 35 && mathCorrect >= 1) resolvedEnding = 'ending_scholar';
+  else if (affection >= 15) resolvedEnding = 'ending_dream';
   else resolvedEnding = 'ending_quit';
   handleScene(resolvedEnding);
 }
@@ -1400,7 +1400,7 @@ function toast(msg) {
 }
 
 function resetGame() {
-  affection = 30; mathCorrect = 0; mathTotal = 0; history = [];
+  affection = 0; mathCorrect = 0; mathTotal = 0; history = [];
   resolvedEnding = null;
   currentScene = 'start';
   document.getElementById('share-panel').classList.remove('show');
