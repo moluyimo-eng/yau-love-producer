@@ -573,6 +573,7 @@ const Q = {
   tao: '陶渊明好读书，不求甚解，每有会意，便欣然忘食。搞数学研究也有同样的经验——读书只要有兴趣，不一定要全懂，慢慢领会其思想。',
   simpler: '以简驭繁，这是一种很美好的感觉。这是与文化艺术共通的语言，张大千的国画，寥寥几笔，栩栩如生，跃然纸上。',
   culture: '数学不是算数，数学是一种文化。文学最高境界，是美的境界，而数学也具有诗歌和散文的内在气质。',
+  iphone: '我们的教育的确有问题。 —— 发送自我的 iPhone',
 };
 
 // ---- Math problems ----
@@ -875,7 +876,7 @@ const scenes = {
 
   ending_quit_2: {
     bg: 'cafe', portrait: true, speaker: '丘成桐',
-    text: '（放下咖啡杯，语气温和但认真。）\n\n同学。\n\n' + Q.mountain + '\n\n' + Q.tenYear + '\n\n这三样东西，你未必缺。\n但做研究就像攀登高峰——\n\n' + Q.mumford + '\n\n你的那座山，也许不叫微分几何。\n\n（站起身，整理西装。）\n\n' + Q.money + '\n\n去找属于你的那座山吧。\n\n（三个月后，你成为了一名前端工程师。\nVibe Coding 让你如鱼得水。\n偶尔夜深人静，你还会想起那个咖啡厅的下午，\n和那个告诉你"去找自己的山"的人。）',
+    text: '（放下咖啡杯，语气温和但认真。）\n\n同学。\n\n' + Q.mountain + '\n\n' + Q.tenYear + '\n\n这三样东西，你未必缺。\n但做研究就像攀登高峰——\n\n' + Q.mumford + '\n\n你的那座山，也许不叫微分几何。\n\n（站起身，整理西装。）\n\n' + Q.money + '\n\n去找属于你的那座山吧。\n\n（他转身走向门口，掏出 iPhone，\n边走边敲了一行字。）\n\n' + Q.iphone + '\n\n（三个月后，你成为了一名前端工程师。\nVibe Coding 让你如鱼得水。\n偶尔夜深人静，你还会想起那个咖啡厅的下午，\n和那个告诉你"去找自己的山"的人。）',
     choices: [
       { text: '谢谢您。那杯咖啡——是我人生最重要的一课。', next: 'end_share' },
     ]
@@ -1233,7 +1234,7 @@ async function handleScene(sceneId) {
 
 function determineEnding() {
   // 2×3 matrix: math(academic) × affection(romance)
-  if (mathCorrect >= 2) {
+  if (mathCorrect >= 1) {
     if (affection >= 65) resolvedEnding = 'ending_calabi_yau';
     else if (affection >= 35) resolvedEnding = 'ending_scholar';
     else resolvedEnding = 'ending_dream';
