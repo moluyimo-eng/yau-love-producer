@@ -233,6 +233,18 @@
     background: rgba(0,0,0,0.35); padding: 4px 12px; border-radius: 10px;
   }
   .status-bar span { color: var(--pink); }
+  .pikachu-mascot { display: inline-block; width: 28px; height: 28px; margin-left: 4px; vertical-align: middle; animation: pikabounce 1.5s ease-in-out infinite; }
+  .pikachu-mascot.shock { animation: pikashock 0.3s ease-out; }
+  @keyframes pikabounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  @keyframes pikashock {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.3) rotate(5deg); }
+    60% { transform: scale(1.2) rotate(-3deg); }
+    100% { transform: scale(1); }
+  }
 
   /* ---- Share Panel ---- */
   #share-panel {
@@ -290,6 +302,7 @@
     <!-- Status -->
     <div class="status-bar">
       好感 <span id="aff-val">30</span> &nbsp;|&nbsp; 数学 <span id="math-val">0/0</span>
+      <span class="pikachu-mascot" id="pikachu-mascot"></span>
     </div>
     <!-- Name tag -->
     <div class="name-tag" id="name-tag"></div>
@@ -409,6 +422,90 @@ const YAU_SVG = `
 
   <!-- Pocket square -->
   <path d="M160,325 L170,325 L170,340 L165,337 L160,340 Z" fill="#c9a96e" opacity="0.6"/>
+</svg>`;
+
+// Sad/disappointed portrait — tears, downturned mouth, drooping eyebrows
+const YAU_SVG_SAD = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 500" width="260" height="433">
+  <defs>
+    <radialGradient id="glow-sad" cx="50%" cy="35%" r="45%">
+      <stop offset="0%" stop-color="rgba(110,130,180,0.2)"/>
+      <stop offset="100%" stop-color="rgba(110,130,180,0)"/>
+    </radialGradient>
+    <linearGradient id="suitGrad-s" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a2a3a"/><stop offset="100%" stop-color="#1a1a28"/>
+    </linearGradient>
+    <linearGradient id="skinGrad-s" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5e0c8"/><stop offset="100%" stop-color="#e8cfa0"/>
+    </linearGradient>
+    <linearGradient id="hairGrad-s" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4d4d8"/><stop offset="100%" stop-color="#a0a0a8"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="150" cy="180" rx="120" ry="180" fill="url(#glow-sad)"/>
+  <path d="M70,350 L60,480 L90,490 L120,400 L150,380 L180,400 L210,490 L240,480 L230,350 Z" fill="url(#suitGrad-s)" stroke="#333" stroke-width="1"/>
+  <path d="M135,310 L150,340 L165,310" fill="#1a1a28" stroke="#333" stroke-width="1"/>
+  <path d="M145,340 L150,370 L155,340" fill="#8b4513"/>
+  <path d="M148,370 L150,395 L152,370" fill="#8b4513"/>
+  <path d="M130,310 L135,310 L150,340 L165,310 L170,310 L150,345 Z" fill="#f8f8f8"/>
+  <rect x="140" y="285" width="20" height="30" rx="8" fill="url(#skinGrad-s)"/>
+  <ellipse cx="150" cy="220" rx="58" ry="72" fill="url(#skinGrad-s)" stroke="#d4b896" stroke-width="1"/>
+  <path d="M92,200 Q90,160 110,148 Q130,138 150,135 Q170,138 190,148 Q210,160 208,200 Q206,175 190,162 Q170,152 150,150 Q130,152 110,162 Q94,175 92,200 Z" fill="url(#hairGrad-s)"/>
+  <path d="M92,200 Q90,230 95,250 Q98,240 100,220 Z" fill="url(#hairGrad-s)"/>
+  <path d="M208,200 Q210,230 205,250 Q202,240 200,220 Z" fill="url(#hairGrad-s)"/>
+  <!-- Drooping eyebrows -->
+  <path d="M120,185 Q135,192 150,188" stroke="#555" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M150,188 Q165,192 180,185" stroke="#555" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <rect x="110" y="190" width="32" height="22" rx="4" fill="none" stroke="#333" stroke-width="2.5"/>
+  <rect x="158" y="190" width="32" height="22" rx="4" fill="none" stroke="#333" stroke-width="2.5"/>
+  <line x1="142" y1="200" x2="158" y2="200" stroke="#333" stroke-width="2"/>
+  <!-- Sadder eyes (smaller, with tears) -->
+  <ellipse cx="126" cy="202" rx="5" ry="3.5" fill="#3a2a1a"/>
+  <ellipse cx="174" cy="202" rx="5" ry="3.5" fill="#3a2a1a"/>
+  <ellipse cx="127" cy="201" rx="2" ry="2" fill="#111"/>
+  <ellipse cx="175" cy="201" rx="2" ry="2" fill="#111"/>
+  <circle cx="128" cy="199" r="1" fill="#fff"/>
+  <circle cx="176" cy="199" r="1" fill="#fff"/>
+  <!-- Tears -->
+  <path d="M120,208 Q118,220 121,228" stroke="rgba(120,160,220,0.6)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M180,208 Q182,220 179,228" stroke="rgba(120,160,220,0.6)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="121" cy="230" rx="2" ry="3" fill="rgba(120,160,220,0.4)"/>
+  <ellipse cx="179" cy="230" rx="2" ry="3" fill="rgba(120,160,220,0.4)"/>
+  <path d="M150,208 Q148,215 147,218 Q150,220 153,218 Q152,215 150,208" fill="#d4b896"/>
+  <!-- Downturned mouth (sad) -->
+  <path d="M140,232 Q150,226 160,232" stroke="#c4956a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="92" cy="218" rx="8" ry="12" fill="url(#skinGrad-s)" stroke="#d4b896" stroke-width="0.5"/>
+  <ellipse cx="208" cy="218" rx="8" ry="12" fill="url(#skinGrad-s)" stroke="#d4b896" stroke-width="0.5"/>
+  <circle cx="145" cy="330" r="3" fill="#6b8cce" opacity="0.6"/>
+  <path d="M160,325 L170,325 L170,340 L165,337 L160,340 Z" fill="#6b8cce" opacity="0.4"/>
+</svg>`;
+
+// Pikachu SVG — cute mascot for the game's vibe
+const PIKACHU_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="40" height="40">
+  <!-- Body -->
+  <ellipse cx="60" cy="72" rx="28" ry="24" fill="#f5c842"/>
+  <!-- Head -->
+  <ellipse cx="60" cy="45" rx="22" ry="18" fill="#f5c842"/>
+  <!-- Ears -->
+  <ellipse cx="42" cy="24" rx="7" ry="16" fill="#f5c842" transform="rotate(-15,42,24)"/>
+  <ellipse cx="78" cy="24" rx="7" ry="16" fill="#f5c842" transform="rotate(15,78,24)"/>
+  <ellipse cx="42" cy="28" rx="4" ry="10" fill="#222" transform="rotate(-15,42,28)"/>
+  <ellipse cx="78" cy="28" rx="4" ry="10" fill="#222" transform="rotate(15,78,28)"/>
+  <!-- Red cheeks -->
+  <circle cx="44" cy="52" r="6" fill="#e8433d" opacity="0.7"/>
+  <circle cx="76" cy="52" r="6" fill="#e8433d" opacity="0.7"/>
+  <!-- Eyes -->
+  <circle cx="52" cy="43" r="3" fill="#222"/>
+  <circle cx="68" cy="43" r="3" fill="#222"/>
+  <circle cx="53" cy="42" r="1.2" fill="#fff"/>
+  <circle cx="69" cy="42" r="1.2" fill="#fff"/>
+  <!-- Nose -->
+  <ellipse cx="60" cy="47" rx="1.5" ry="1" fill="#222"/>
+  <!-- Mouth -->
+  <path d="M55,50 Q60,56 65,50" stroke="#222" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Tail (lightning shape → zigzag) -->
+  <path d="M88,68 L96,50 L88,54 L95,40 L84,52 L91,48 L84,60 Z" fill="#f5c842" stroke="#e0b030" stroke-width="1"/>
 </svg>`;
 
 // No-portrait scene: a decorative math-inspired placeholder
@@ -832,9 +929,9 @@ function setBG(name) {
   spawnParticles();
 }
 
-function setPortrait(show) {
+function setPortrait(show, mood) {
   if (show) {
-    $charArea.innerHTML = YAU_SVG;
+    $charArea.innerHTML = (mood === 'sad') ? YAU_SVG_SAD : YAU_SVG;
     $charArea.classList.add('show');
   } else {
     $charArea.innerHTML = NO_PORTRAIT_SVG;
@@ -907,6 +1004,7 @@ function showMathDOM(problem, passScene, failScene) {
         handleScene(passScene);
       } else {
         affection -= 5; updateStatus();
+        shockPikachu();
         flashPop(false);
         $choices.style.display = 'none';
         $dialogue.textContent = '❌ 不对。' + (problem.hint || '');
@@ -1036,6 +1134,7 @@ async function handleChoice(ch) {
   awaitingInput = false;
   $choices.style.display = 'none';
   if (ch.aff) {
+    if (ch.aff < 0) shockPikachu();
     affection += ch.aff;
     if (affection > 100) affection = 100;
     if (affection < 0) affection = 0;
@@ -1051,7 +1150,10 @@ async function handleScene(sceneId) {
   if (!s) return console.error('Missing:', sceneId);
 
   if (s.bg) setBG(s.bg);
-  if (s.portrait !== undefined) setPortrait(s.portrait);
+  if (s.portrait !== undefined) {
+    const isFail = /_(no|joke|disappointed)$/.test(currentScene);
+    setPortrait(s.portrait, isFail ? 'sad' : 'normal');
+  }
   setSpeaker(s.speaker || '');
 
   // Math problem
@@ -1338,6 +1440,18 @@ document.getElementById('dialogue-area').addEventListener('click', (e) => {
   if (e.target.id === 'skip-btn') return;
   skipTyping();
 });
+
+// ============================
+// PIKACHU MASCOT
+// ============================
+const $pika = document.getElementById('pikachu-mascot');
+$pika.innerHTML = PIKACHU_SVG;
+
+function shockPikachu() {
+  $pika.classList.remove('shock');
+  void $pika.offsetWidth; // force reflow
+  $pika.classList.add('shock');
+}
 
 // ============================
 // LAUNCH
