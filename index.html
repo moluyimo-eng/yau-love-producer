@@ -266,7 +266,7 @@
 
   /* ---- Fireworks ---- */
   #fireworks-canvas {
-    position: absolute; inset: 0; pointer-events: none; z-index: 100;
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999;
     opacity: 0; transition: opacity 0.5s;
   }
   #fireworks-canvas.active { opacity: 1; }
@@ -284,8 +284,6 @@
     <div class="bg-window" id="cafe-window" style="display:none"></div>
     <!-- Floating particles -->
     <div class="particles" id="particles"></div>
-    <!-- Fireworks -->
-    <canvas id="fireworks-canvas"></canvas>
     <!-- Math formula overlay -->
     <div class="formula-overlay" id="formula1">∂g/∂t = -2Ric</div>
     <div class="formula-overlay line2" id="formula2">c₁(X) = 0</div>
@@ -321,6 +319,7 @@
   </div>
 </div>
 <canvas id="share-canvas" width="800" height="500" style="display:none"></canvas>
+<canvas id="fireworks-canvas"></canvas>
 
 <!-- ============ INLINE SVG: Professor Yau Portrait ============ -->
 <script>
@@ -911,9 +910,8 @@ function flashPop(ok) {
 let fireworksRunning = false;
 function launchFireworks() {
   const canvas = document.getElementById('fireworks-canvas');
-  const phone = document.querySelector('.phone');
-  canvas.width = phone.clientWidth;
-  canvas.height = phone.clientHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   canvas.classList.add('active');
   const ctx = canvas.getContext('2d');
 
