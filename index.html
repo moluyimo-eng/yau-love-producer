@@ -161,6 +161,16 @@
   .typing-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--gold); }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
+  .skip-btn {
+    position: absolute; bottom: 8px; right: 16px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.4); font-family: inherit; font-size: 0.7em;
+    padding: 3px 10px; border-radius: 10px; cursor: pointer;
+    transition: all 0.2s; display: none; letter-spacing: 1px;
+  }
+  .skip-btn:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.3); }
+  .skip-btn.show { display: block; }
+
   /* ---- Choices ---- */
   .choices-overlay {
     background: rgba(10,10,20,0.96); padding: 14px 18px;
@@ -290,9 +300,10 @@
   </div>
 
   <!-- Dialogue -->
-  <div class="dialogue-area">
+  <div class="dialogue-area" id="dialogue-area">
     <div class="speaker-name" id="speaker"></div>
     <div class="dialogue-text" id="dialogue-text"></div>
+    <button class="skip-btn" id="skip-btn" onclick="skipTyping()" title="跳过动画">跳过 ▸▸</button>
   </div>
 
   <!-- Choices -->
@@ -824,14 +835,26 @@ function setSpeaker(name) {
   }
 }
 
+let skipFlag = false;
+function skipTyping() { skipFlag = true; }
+
 async function typeText(text, el) {
+  skipFlag = false;
+  const skipBtn = document.getElementById('skip-btn');
   el.textContent = '';
   el.classList.add('typing-cursor');
+  skipBtn.classList.add('show');
   for (let i = 0; i < text.length; i++) {
+    if (skipFlag) {
+      el.textContent = text;
+      break;
+    }
     el.textContent += text[i];
     await sleep(text[i] === '\n' ? 150 : 45);
   }
   el.classList.remove('typing-cursor');
+  skipBtn.classList.remove('show');
+  skipFlag = false;
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -1271,6 +1294,12 @@ function resetGame() {
 
 // ---- Keyboard ----
 document.addEventListener('keydown', e => {
+  // Space/Enter to skip typing
+  if ((e.key === ' ' || e.key === 'Enter') && !awaitingInput) {
+    e.preventDefault();
+    skipTyping();
+    return;
+  }
   if (!awaitingInput) return;
   if (e.key >= '1' && e.key <= '4') {
     const btns = $choices.querySelectorAll('.choice-btn');
@@ -1288,6 +1317,12 @@ document.addEventListener('keydown', e => {
     const b = Array.from($choices.querySelectorAll('.choice-btn')).find(b => b.textContent.includes('重新开始'));
     if (b) b.click();
   }
+});
+
+// Click dialogue area to skip
+document.getElementById('dialogue-area').addEventListener('click', (e) => {
+  if (e.target.id === 'skip-btn') return;
+  skipTyping();
 });
 
 // ============================
