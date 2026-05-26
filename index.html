@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>丘成桐版恋与制作人</title>
+<style>
+  :root {
+    --gold: #c9a96e; --gold-light: #e0c78a;
+    --pink: #e8919c; --pink-light: #f5c6ce;
+    --blue: #6b8cce; --white: #f0ece4;
+    --dialogue-bg: rgba(20, 24, 40, 0.95);
+    --choice-bg: rgba(201, 169, 110, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0f0f1a;
+    font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+    min-height: 100vh; display: flex; justify-content: center; align-items: center;
+    padding: 16px;
+    background-image:
+      radial-gradient(ellipse at 50% 30%, rgba(201,169,110,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(232,145,156,0.05) 0%, transparent 50%);
+  }
+
+  /* ---- Phone Frame ---- */
+  .phone {
+    width: 420px; max-width: 100%; height: 86vh; max-height: 820px; min-height: 640px;
+    border-radius: 24px; overflow: hidden; position: relative;
+    box-shadow: 0 0 0 3px #2a2a3a, 0 0 0 6px #1a1a28, 0 0 0 8px #333348, 0 20px 60px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+  }
+
+  /* ---- Scene Backgrounds ---- */
+  .scene {
+    flex: 1; position: relative; overflow: hidden; transition: background 1.2s ease;
+  }
+  .scene.library {
+    background: linear-gradient(180deg, #2c1810 0%, #3d2417 35%, #1a0f0a 100%);
+  }
+  .scene.library .bg-layer {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      repeating-linear-gradient(90deg, transparent, transparent 42px, rgba(255,255,255,0.02) 42px, rgba(255,255,255,0.02) 44px),
+      radial-gradient(ellipse at 70% 25%, rgba(255,200,120,0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 65%, rgba(255,160,80,0.05) 0%, transparent 40%);
+  }
+  .scene.lecture {
+    background: linear-gradient(180deg, #151d33 0%, #1c2748 40%, #111929 100%);
+  }
+  .scene.lecture .bg-layer {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse at 55% 30%, rgba(100,140,210,0.1) 0%, transparent 55%),
+      radial-gradient(ellipse at 70% 70%, rgba(80,120,200,0.04) 0%, transparent 40%);
+  }
+  .scene.lecture .bg-chalkboard {
+    position: absolute; top: 8%; left: 5%; right: 5%; height: 55%;
+    background: rgba(20,30,20,0.3);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  .scene.cafe {
+    background: linear-gradient(180deg, #3d2015 0%, #4a2a1a 45%, #2a1510 100%);
+  }
+  .scene.cafe .bg-layer {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 35%, rgba(255,180,100,0.15) 0%, transparent 55%),
+      radial-gradient(ellipse at 75% 75%, rgba(255,140,70,0.06) 0%, transparent 40%);
+  }
+  .scene.cafe .bg-window {
+    position: absolute; top: 10%; right: 10%; width: 35%; height: 40%;
+    background: linear-gradient(180deg, rgba(255,200,150,0.08), rgba(255,150,100,0.04));
+    border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  .scene.dream {
+    background: linear-gradient(180deg, #0a0a1a 0%, #121830 50%, #1a1025 100%);
+  }
+  .scene.dream .bg-layer {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse at 40% 25%, rgba(180,150,220,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 60%, rgba(140,180,220,0.06) 0%, transparent 50%);
+  }
+
+  /* ---- Floating Math Particles ---- */
+  .particles {
+    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    opacity: 0;
+    animation: floatUp 8s infinite;
+    color: rgba(201,169,110,0.15);
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.12; }
+    90% { opacity: 0.08; }
+    100% { transform: translateY(-400px) rotate(40deg); opacity: 0; }
+  }
+
+  /* ---- Character Area ---- */
+  .character-area {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 55%; height: 70%; display: flex; align-items: flex-end; justify-content: center;
+    pointer-events: none; transition: all 0.6s ease;
+  }
+  .character-area svg {
+    max-height: 100%; max-width: 100%;
+    filter: drop-shadow(0 0 24px rgba(0,0,0,0.5));
+    transition: all 0.5s ease;
+    opacity: 0; transform: translateY(30px);
+  }
+  .character-area.show svg {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* ---- Name Tag ---- */
+  .name-tag {
+    position: absolute; top: 16px; left: 20px;
+    background: rgba(0,0,0,0.55); border: 1px solid var(--gold);
+    padding: 5px 14px; border-radius: 16px;
+    color: var(--gold-light); font-size: 0.78em; letter-spacing: 2px;
+    pointer-events: none; opacity: 0; transition: opacity 0.4s; z-index: 5;
+  }
+  .name-tag.show { opacity: 1; }
+
+  /* ---- Math formula decorative overlay ---- */
+  .formula-overlay {
+    position: absolute; top: 12%; left: 10%;
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: rgba(201,169,110,0.12); letter-spacing: 1px;
+    pointer-events: none; z-index: 2;
+    transition: opacity 0.6s;
+  }
+  .formula-overlay.line2 { top: auto; bottom: 18%; left: auto; right: 8%; }
+
+  /* ---- Dialogue Box ---- */
+  .dialogue-area {
+    background: var(--dialogue-bg);
+    border-top: 1px solid rgba(201,169,110,0.2);
+    padding: 16px 20px 12px; min-height: 130px;
+    position: relative; backdrop-filter: blur(10px);
+  }
+  .speaker-name {
+    color: var(--gold); font-size: 0.78em; font-weight: bold;
+    letter-spacing: 2px; margin-bottom: 6px;
+  }
+  .speaker-name.narrator { color: #999; }
+  .dialogue-text {
+    color: var(--white); font-size: 0.93em; line-height: 1.8; min-height: 3.6em;
+  }
+  .typing-cursor::after { content: '|'; animation: blink 1s infinite; color: var(--gold); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ---- Choices ---- */
+  .choices-overlay {
+    background: rgba(10,10,20,0.96); padding: 14px 18px;
+    border-top: 1px solid rgba(232,145,156,0.2);
+    display: flex; flex-direction: column; gap: 7px;
+    backdrop-filter: blur(10px);
+  }
+  .choice-btn {
+    background: var(--choice-bg); border: 1px solid rgba(201,169,110,0.2);
+    color: #d4c5a9; padding: 11px 14px; font-size: 0.88em;
+    cursor: pointer; text-align: left; border-radius: 8px;
+    transition: all 0.25s; font-family: inherit;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .choice-btn:hover {
+    background: rgba(201,169,110,0.18); border-color: var(--gold);
+    color: var(--gold-light); box-shadow: 0 0 12px rgba(201,169,110,0.12);
+  }
+  .choice-btn:active { background: rgba(201,169,110,0.25); transform: scale(0.98); }
+  .choice-btn .num {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1px solid var(--gold); display: flex;
+    align-items: center; justify-content: center; font-size: 0.75em; flex-shrink: 0;
+    color: var(--gold-light);
+  }
+
+  .math-btn {
+    background: rgba(107,140,206,0.08); border: 1px solid rgba(107,140,206,0.25);
+    color: #b0c4e8; padding: 11px 14px; font-size: 0.88em;
+    cursor: pointer; text-align: left; border-radius: 8px;
+    transition: all 0.25s; font-family: inherit;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .math-btn:hover {
+    background: rgba(107,140,206,0.18); border-color: var(--blue);
+    color: #c8d6f0; box-shadow: 0 0 12px rgba(107,140,206,0.1);
+  }
+  .math-btn .num {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1px solid var(--blue); display: flex;
+    align-items: center; justify-content: center; font-size: 0.75em; flex-shrink: 0;
+  }
+
+  /* ---- Result pop ---- */
+  .result-pop {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    font-size: 1.3em; font-weight: bold; padding: 12px 28px; border-radius: 12px;
+    z-index: 500; pointer-events: none;
+    animation: popIn 0.35s ease, popOut 0.35s 1.3s ease forwards;
+  }
+  .result-pop.ok { background: rgba(0,200,100,0.12); color: #5f5; border: 1px solid rgba(0,200,100,0.3); }
+  .result-pop.no { background: rgba(255,80,80,0.12); color: #f77; border: 1px solid rgba(255,80,80,0.3); }
+  @keyframes popIn { from{opacity:0;transform:translate(-50%,-50%) scale(0.7)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
+  @keyframes popOut { from{opacity:1} to{opacity:0} }
+
+  /* ---- Status ---- */
+  .status-bar {
+    position: absolute; top: 14px; right: 18px; display: flex; gap: 12px;
+    font-size: 0.68em; color: rgba(255,255,255,0.45); z-index: 50; pointer-events: none;
+    background: rgba(0,0,0,0.35); padding: 4px 12px; border-radius: 10px;
+  }
+  .status-bar span { color: var(--pink); }
+
+  /* ---- Share Panel ---- */
+  #share-panel {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.93); z-index: 1000;
+    flex-direction: column; justify-content: center; align-items: center; gap: 16px;
+  }
+  #share-panel.show { display: flex; }
+  #share-panel img { max-width: 92vw; max-height: 55vh; border-radius: 10px; box-shadow: 0 4px 40px rgba(0,0,0,0.6); }
+  #share-panel .btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  #share-panel button, #share-panel .btn-zh {
+    padding: 11px 20px; border-radius: 22px; font-size: 0.85em;
+    cursor: pointer; font-family: inherit; text-decoration: none;
+    transition: all 0.2s; border: 1px solid;
+  }
+  .btn-dl { background: rgba(201,169,110,0.1); color: var(--gold); border-color: var(--gold); }
+  .btn-dl:hover { background: rgba(201,169,110,0.25); }
+  .btn-cp { background: rgba(232,145,156,0.1); color: var(--pink); border-color: var(--pink); }
+  .btn-cp:hover { background: rgba(232,145,156,0.25); }
+  .btn-zh { background: #06f; color: #fff; border-color: #06f; display: inline-flex; align-items: center; gap: 4px; }
+  .btn-zh:hover { background: #0052cc; }
+  .btn-cl { background: transparent; color: #666; border-color: #444; }
+  .btn-cl:hover { color: #fff; }
+
+  @media (max-width: 460px) {
+    .phone { height: 93vh; border-radius: 0; }
+    body { padding: 0; }
+    .character-area { width: 70%; height: 60%; }
+    .formula-overlay { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- Scene -->
+  <div class="scene library" id="scene">
+    <div class="bg-layer"></div>
+    <!-- Chalkboard (lecture only) -->
+    <div class="bg-chalkboard" id="chalkboard" style="display:none"></div>
+    <!-- Window (cafe only) -->
+    <div class="bg-window" id="cafe-window" style="display:none"></div>
+    <!-- Floating particles -->
+    <div class="particles" id="particles"></div>
+    <!-- Math formula overlay -->
+    <div class="formula-overlay" id="formula1">∂g/∂t = -2Ric</div>
+    <div class="formula-overlay line2" id="formula2">c₁(X) = 0</div>
+    <!-- Status -->
+    <div class="status-bar">
+      好感 <span id="aff-val">30</span> &nbsp;|&nbsp; 数学 <span id="math-val">0/0</span>
+    </div>
+    <!-- Name tag -->
+    <div class="name-tag" id="name-tag"></div>
+    <!-- Character portrait -->
+    <div class="character-area" id="character-area"></div>
+  </div>
+
+  <!-- Dialogue -->
+  <div class="dialogue-area">
+    <div class="speaker-name" id="speaker"></div>
+    <div class="dialogue-text" id="dialogue-text"></div>
+  </div>
+
+  <!-- Choices -->
+  <div class="choices-overlay" id="choices" style="display:none"></div>
+</div>
+
+<!-- Share panel -->
+<div id="share-panel">
+  <img id="share-img" src="" alt="分享卡片">
+  <div class="btn-row">
+    <button class="btn-dl" onclick="downloadShare()">下载图片</button>
+    <button class="btn-cp" onclick="copyShareText()">复制文案</button>
+    <a class="btn-zh" href="#" onclick="goZhihu();return false">去知乎发想法</a>
+    <button class="btn-cl" onclick="closeShare()">关闭</button>
+  </div>
+</div>
+<canvas id="share-canvas" width="800" height="500" style="display:none"></canvas>
+
+<!-- ============ INLINE SVG: Professor Yau Portrait ============ -->
+<script>
+// SVG portrait of "anime professor Yau" — glasses, suit, silver hair, scholarly aura
+const YAU_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 500" width="260" height="433">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="35%" r="45%">
+      <stop offset="0%" stop-color="rgba(201,169,110,0.25)"/>
+      <stop offset="100%" stop-color="rgba(201,169,110,0)"/>
+    </radialGradient>
+    <linearGradient id="suitGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a2a3a"/>
+      <stop offset="100%" stop-color="#1a1a28"/>
+    </linearGradient>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5e0c8"/>
+      <stop offset="100%" stop-color="#e8cfa0"/>
+    </linearGradient>
+    <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4d4d8"/>
+      <stop offset="100%" stop-color="#a0a0a8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Aura glow -->
+  <ellipse cx="150" cy="180" rx="120" ry="180" fill="url(#glow)"/>
+
+  <!-- Body: Suit shoulders -->
+  <path d="M70,350 L60,480 L90,490 L120,400 L150,380 L180,400 L210,490 L240,480 L230,350 Z"
+        fill="url(#suitGrad)" stroke="#333" stroke-width="1"/>
+  <!-- Suit collar -->
+  <path d="M135,310 L150,340 L165,310" fill="#1a1a28" stroke="#333" stroke-width="1"/>
+  <!-- Tie -->
+  <path d="M145,340 L150,370 L155,340" fill="#8b4513"/>
+  <path d="M148,370 L150,395 L152,370" fill="#8b4513"/>
+  <!-- Shirt -->
+  <path d="M130,310 L135,310 L150,340 L165,310 L170,310 L150,345 Z" fill="#f8f8f8"/>
+
+  <!-- Neck -->
+  <rect x="140" y="285" width="20" height="30" rx="8" fill="url(#skinGrad)"/>
+
+  <!-- Head -->
+  <ellipse cx="150" cy="220" rx="58" ry="72" fill="url(#skinGrad)" stroke="#d4b896" stroke-width="1"/>
+
+  <!-- Hair (distinguished silver, slightly receding) -->
+  <path d="M92,200 Q90,160 110,148 Q130,138 150,135 Q170,138 190,148 Q210,160 208,200
+           Q206,175 190,162 Q170,152 150,150 Q130,152 110,162 Q94,175 92,200 Z"
+        fill="url(#hairGrad)"/>
+  <!-- Side hair -->
+  <path d="M92,200 Q90,230 95,250 Q98,240 100,220 Z" fill="url(#hairGrad)"/>
+  <path d="M208,200 Q210,230 205,250 Q202,240 200,220 Z" fill="url(#hairGrad)"/>
+
+  <!-- Eyebrows -->
+  <path d="M120,185 Q135,178 150,182" stroke="#555" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M150,182 Q165,178 180,185" stroke="#555" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Glasses -->
+  <rect x="110" y="190" width="32" height="22" rx="4" fill="none" stroke="#333" stroke-width="2.5"/>
+  <rect x="158" y="190" width="32" height="22" rx="4" fill="none" stroke="#333" stroke-width="2.5"/>
+  <line x1="142" y1="200" x2="158" y2="200" stroke="#333" stroke-width="2"/>
+  <!-- Glass glare -->
+  <line x1="115" y1="194" x2="125" y2="194" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+  <line x1="163" y1="194" x2="173" y2="194" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+
+  <!-- Eyes (behind glasses) -->
+  <ellipse cx="126" cy="202" rx="6" ry="4" fill="#3a2a1a"/>
+  <ellipse cx="174" cy="202" rx="6" ry="4" fill="#3a2a1a"/>
+  <ellipse cx="127" cy="201" rx="2.5" ry="2.5" fill="#111"/>
+  <ellipse cx="175" cy="201" rx="2.5" ry="2.5" fill="#111"/>
+  <!-- Eye highlight -->
+  <circle cx="129" cy="200" r="1.2" fill="#fff"/>
+  <circle cx="177" cy="200" r="1.2" fill="#fff"/>
+
+  <!-- Nose -->
+  <path d="M150,208 Q148,215 147,218 Q150,220 153,218 Q152,215 150,208" fill="#d4b896"/>
+
+  <!-- Mouth (slight knowing smile) -->
+  <path d="M140,228 Q150,236 160,228" stroke="#c4956a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+  <!-- Ears -->
+  <ellipse cx="92" cy="218" rx="8" ry="12" fill="url(#skinGrad)" stroke="#d4b896" stroke-width="0.5"/>
+  <ellipse cx="208" cy="218" rx="8" ry="12" fill="url(#skinGrad)" stroke="#d4b896" stroke-width="0.5"/>
+
+  <!-- Lapel pin (Fields medal hint) -->
+  <circle cx="145" cy="330" r="3" fill="#c9a96e" opacity="0.8"/>
+
+  <!-- Pocket square -->
+  <path d="M160,325 L170,325 L170,340 L165,337 L160,340 Z" fill="#c9a96e" opacity="0.6"/>
+</svg>`;
+
+// No-portrait scene: a decorative math-inspired placeholder
+const NO_PORTRAIT_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="120" height="120">
+  <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(201,169,110,0.12)" stroke-width="1"/>
+  <circle cx="100" cy="100" r="50" fill="none" stroke="rgba(201,169,110,0.08)" stroke-width="1"/>
+  <text x="100" y="105" text-anchor="middle" font-family="serif" font-size="40" fill="rgba(201,169,110,0.12)" font-style="italic">π</text>
+</svg>`;
+</script>
+
+<script>
+// ============================
+// GAME DATA
+// ============================
+
+const $scene = document.getElementById('scene');
+const $nameTag = document.getElementById('name-tag');
+const $charArea = document.getElementById('character-area');
+const $speaker = document.getElementById('speaker');
+const $dialogue = document.getElementById('dialogue-text');
+const $choices = document.getElementById('choices');
+const $affVal = document.getElementById('aff-val');
+const $mathVal = document.getElementById('math-val');
+const $formula1 = document.getElementById('formula1');
+const $formula2 = document.getElementById('formula2');
+const $chalkboard = document.getElementById('chalkboard');
+const $cafeWindow = document.getElementById('cafe-window');
+const $particles = document.getElementById('particles');
+
+let affection = 30, mathCorrect = 0, mathTotal = 0;
+let currentScene = 'start', awaitingInput = false;
+let history = [];
+
+// ---- YAU QUOTES (real) ----
+const Q = {
+  taste: '做学问，第一要有品位，第二要有品位，第三还是要有品位。',
+  culture: '数学不是算数，数学是一种文化。',
+  independence: '中国的数学要走向世界，不能总是跟在别人后面，必须提出自己的问题。',
+  calabi: '证明卡拉比猜想的那天晚上，我激动得睡不着觉。那是一种无法形容的快乐。',
+  goodQ: '一个好的数学家要会问好的问题，而不只是会解决问题。提问比解答更重要。',
+  mountain: '做研究就像爬山，最难的不是攀登的过程，而是在茫茫群山中找到那座值得攀登的山。',
+  teach: '我在哈佛教了几十年书，最重要的事情就是让学生学会独立思考，而不是模仿我的想法。',
+  beauty: '数学的美在于它的简洁和深刻。一个真正好的定理，你一眼就能感受到它的力量。',
+  persistence: '做数学需要三个条件：天赋、勤奋、和一颗耐得住寂寞的心。',
+  truth: '数学是最诚实的学科。一个定理，对就是对，错就是错。没有灰色地带。',
+};
+
+// ---- Math problems ----
+const mathProblems = [
+  { q: '设 f(x)=e^x·sin(x)，则 f\'(0) = ?', opts: ['0', '1', 'e', '不存在'], ans: 1, hint: '乘积法则: (uv)\'=u\'v+uv\', 代入 x=0' },
+  { q: '超弦理论中，卡拉比-丘流形的复维度通常是？', opts: ['2维', '3维', '4维', '6维'], ans: 1, hint: '10维=4维宏观+6维紧致化=3个复维度' },
+  { q: 'Ricci曲率张量描述了什么几何性质？', opts: ['空间的扭转程度', '体积元相对于欧氏空间的偏离', '测地线的收敛/发散', '曲面的颜色分布'], ans: 1, hint: 'Ricci流让流形"变圆"——调整的是体积。' },
+  { q: '庞加莱猜想最终被谁证明？', opts: ['丘成桐', '陈省身', '格里戈里·佩雷尔曼', '陶哲轩'], ans: 2, hint: '这位俄罗斯数学家拒绝了菲尔兹奖和百万美元奖金。' },
+  { q: '球面 S² 的欧拉示性数 χ = ?', opts: ['0', '1', '2', '-2'], ans: 2, hint: 'V-E+F=2, 立方体吹成球面' },
+  { q: 'Ricci流方程 ∂g/∂t=-2Ric 中，g 是？', opts: ['引力常数', '度规张量', '高斯曲率', '李群作用'], ans: 0, hint: '它决定流形上两点间距离的度量方式。' },
+];
+
+function pickMath(i) { return mathProblems[i]; }
+
+// ---- SCENES ----
+const scenes = {
+
+  start: {
+    bg: 'library', portrait: false, speaker: '',
+    text: '夜深了。图书馆的日光灯嗡嗡作响。\n你趴在桌上，面前摊着一本《微分几何讲义》。\n论文 deadline 就在明天，而你连第一章的联络与曲率都没搞明白。\n\n你的眼皮越来越重...意识逐渐模糊...',
+    next: 'dream_start',
+  },
+
+  dream_start: {
+    bg: 'dream', portrait: false, speaker: '',
+    text: '恍惚间，一道金光从书页中射出。\n你揉了揉眼睛——\n\n数学公式像萤火虫一样从书页中飘起来。\n∂g/∂t = -2Ric... c₁(X) = 0... χ = V-E+F...\n\n你在公式的海洋中，看到一个身影。',
+    next: 'meet_yau',
+  },
+
+  meet_yau: {
+    bg: 'library', portrait: true, speaker: '???',
+    text: '这位同学，你对卡拉比-丘流形感兴趣吗？\n\n（声音沉稳、温和，带着一丝不容置疑的权威感）',
+    next: 'meet_yau_cont',
+  },
+
+  meet_yau_cont: {
+    bg: 'library', portrait: true, speaker: '',
+    text: '你猛地抬头。\n\n一个穿着笔挺深蓝西装的中年男子站在你面前。\n银灰色的头发一丝不苟，金丝边眼镜后面，\n眼神中带着数学家特有的锐利——和一丝难以察觉的温柔。\n\n他胸前的名牌写着：丘成桐。\n\n菲尔兹奖得主。卡拉比-丘流形的命名者之一。\n哈佛大学教授。活着的传奇。\n\n此刻，他就站在你面前。',
+    choices: [
+      { text: '（激动地站起来）丘教授！我是您的粉丝！读过您所有论文！', next: 'meet_fan' },
+      { text: '（故作镇定）卡拉比-丘流形...第一陈类为零的紧凯勒流形，具有SU(n)和乐群？', next: 'meet_cool' },
+      { text: '（迷茫地眨眼）啊？什么流形？跟流体力学有关系吗？', next: 'meet_lost' },
+    ]
+  },
+
+  meet_fan: {
+    bg: 'library', portrait: true, speaker: '丘成桐',
+    text: '哦？读过我的论文？\n\n（微微挑眉，嘴角有一丝不易察觉的上扬）\n\n那你说说，我最自豪的成果是什么？',
+    choices: [
+      { text: '卡拉比-丘定理！1976年，您证明了卡拉比猜想，这是微分几何的里程碑！', next: 'yau_impressed', aff: 15 },
+      { text: '唔...证明了...费马大定理？', next: 'yau_disappointed', aff: -10 },
+    ]
+  },
+
+  meet_cool: {
+    bg: 'library', portrait: true, speaker: '丘成桐',
+    text: '（眼神一亮，推了推眼镜）\n\n不错。连 SU(n) 和乐群都提到了。深夜的图书馆里，\n居然藏着懂微分几何的学生。\n\n那我考考你——为什么偏偏是卡拉比-丘流形，\n而不是别的凯勒流形，在弦理论中扮演了核心角色？',
+    choices: [
+      { text: '因为它 Ricci 平坦，SU(n)和乐群恰好满足超弦紧致化所需的未破缺超对称。', next: 'yau_impressed', aff: 20 },
+      { text: '因为...名字比较浪漫？Calabi-Yau，念起来像一首诗。', next: 'yau_chuckle', aff: 5 },
+    ]
+  },
+
+  meet_lost: {
+    bg: 'library', portrait: true, speaker: '丘成桐',
+    text: '（轻叹一声，推了推眼镜）\n\n流体力学...倒也不算太远，都用偏微分方程。\n\n不过，同学——' + Q.culture + '\n\n明天下午三点，理学院报告厅。我有场讲座。\n你来听听。也许能帮你打开一扇新的大门。',
+    choices: [
+      { text: '好的！我一定来！', next: 'lecture_intro', aff: 5 },
+    ]
+  },
+
+  yau_impressed: {
+    bg: 'library', portrait: true, speaker: '丘成桐',
+    text: '很好。非常好。\n\n你的基础比我想象的扎实得多。\n\n' + Q.goodQ + '\n\n他从怀中掏出一张精致的邀请函。\n明天下午的讲座——他希望你坐第一排。',
+    choices: [
+      { text: '（恭敬地双手接过）谢谢丘教授！我一定到！', next: 'lecture_intro', aff: 10 },
+    ]
+  },
+
+  yau_disappointed: {
+    bg: 'library', portrait: true, speaker: '丘成桐',
+    text: '...费马大定理是安德鲁·怀尔斯在1994年证明的。\n\n不过——至少你知道这个名字。不算完全的门外汉。\n\n' + Q.mountain + '\n\n明天下午，也许我的讲座能帮你找到那座山。',
+    choices: [
+      { text: '我一定去！这次我会好好表现的。', next: 'lecture_intro', aff: 0 },
+    ]
+  },
+
+  yau_chuckle: {
+    bg: 'library', portrait: true, speaker: '丘成桐',
+    text: '（嘴角微扬，这大概是今晚第一次笑）\n\nCalabi-Yau...浪漫？有趣。\n\nEugenio Calabi 在1957年提出这个猜想时，\n大概没想到半个世纪后，会有人在深夜图书馆里用"浪漫"形容它。\n\n来吧，听我的讲座。也许你会发现——\n数学真正的浪漫。',
+    choices: [
+      { text: '听您这么说，我已经开始期待了！', next: 'lecture_intro', aff: 5 },
+    ]
+  },
+
+  // ===== LECTURE =====
+  lecture_intro: {
+    bg: 'lecture', portrait: true, speaker: '',
+    text: '第二天下午。理学院报告厅座无虚席。\n\n丘成桐走上讲台。深蓝西装，白衬衫，\n金丝边眼镜在灯光下微微反光。\n粉笔在他手中像一支指挥棒。\n\n黑板上的公式如行云流水——',
+    next: 'lecture_q',
+  },
+
+  lecture_q: {
+    bg: 'lecture', portrait: true, speaker: '丘成桐',
+    text: '今天讲——卡拉比-丘流形的模空间及其在镜像对称中的应用。\n\n（停顿。目光扫过全场。在你身上，多停了半秒。）\n\n在座各位，有谁能告诉我——\nHodge 数 h^{1,1} 在弦论紧致化中，为什么如此重要？',
+    choices: [
+      { text: '（举手）它决定规范场生成元数目，对应凯勒模空间维数，直接关系标准模型粒子谱。', next: 'lecture_hero', aff: 20 },
+      { text: '（低头假装疯狂记笔记）', next: 'lecture_safe', aff: 0 },
+      { text: '（小声嘀咕）Hodge？霍格沃茨魔法学校的那个？', next: 'lecture_joke', aff: -5 },
+    ]
+  },
+
+  lecture_hero: {
+    bg: 'lecture', portrait: true, speaker: '丘成桐',
+    text: '完全正确。\n\n（他微微颔首，嘴角扬起一丝赞许）\n\n看来台下有认真读书的人。\n\n讲座结束后，请到前面来——\n我想跟你聊聊。',
+    choices: [
+      { text: '（心跳加速）好的，丘教授！', next: 'math_duel_intro', aff: 10 },
+    ]
+  },
+
+  lecture_safe: {
+    bg: 'lecture', portrait: true, speaker: '丘成桐',
+    text: '（扫视一圈）看来这个问题难倒了大家。\n没关系，我们继续。\n\n讲座结束后，人群散去。你正准备悄悄溜走——',
+    next: 'called_out',
+  },
+
+  lecture_joke: {
+    bg: 'lecture', portrait: true, speaker: '丘成桐',
+    text: '（停顿。目光精准地落在你身上。）\n\n那位说"霍格沃茨"的同学——\n下课后来找我。我觉得你需要...补课。\n\n报告厅里发出一阵轻笑。你的脸烧了起来。',
+    choices: [
+      { text: '（通红着脸）是...丘教授...', next: 'math_duel_intro', aff: -5 },
+    ]
+  },
+
+  called_out: {
+    bg: 'lecture', portrait: true, speaker: '丘成桐',
+    text: '等一下。昨晚在图书馆的——是你吧？\n\n（他居然记得你。在两百人的讲座之后。）\n\n来，我请你喝杯咖啡。\n有些问题，想当面考考你。',
+    choices: [
+      { text: '（惊喜交加）您还记得我！好！', next: 'math_duel_intro', aff: 5 },
+    ]
+  },
+
+  // ===== COFFEE + MATH DUEL =====
+  math_duel_intro: {
+    bg: 'cafe', portrait: true, speaker: '',
+    text: '数学系旁边的咖啡厅。下午四点的阳光从窗户斜照进来，\n把一切都镀成琥珀色。\n\n丘成桐点了一杯黑咖啡。不加糖，不加奶。\n他拿出钢笔，在餐巾纸上写下一个方程。',
+    next: 'math_duel_start',
+  },
+
+  math_duel_start: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '既然你对微分几何感兴趣——我考你几道题。\n\n答得好，我敬你是可造之材。\n答不好...这杯咖啡你请客。\n\n（嘴角微扬。这是在撩你吗？还是在认真考验你？\n你分不清。）\n\n准备好了吗？',
+    choices: [
+      { text: '放马过来吧！', next: 'math_1', aff: 5 },
+    ]
+  },
+
+  math_1: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '第一题：' + pickMath(0).q,
+    math: 0, pass: 'math_1_ok', fail: 'math_1_no',
+  },
+
+  math_1_ok: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '✅ 正确。基本功很扎实。\n\n很多研究生连乘积法则都用不熟练。\n\n（喝了一口咖啡。目光中多了一丝欣赏。）',
+    choices: [{ text: '继续！下一题！', next: 'math_2' }]
+  },
+
+  math_1_no: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '❌ 错了。乘积法则——(uv)\' = u\'v + uv\'。\n代入 x=0：e^0=1，sin(0)=0，cos(0)=1，答案是 1。\n\n...这是大一微积分的内容。\n你刚才在讲座上是怎么答出 h^{1,1} 的？',
+    choices: [{ text: '（尴尬）咳咳...下一题我一定行！', next: 'math_2' }]
+  },
+
+  math_2: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '第二题：' + pickMath(1).q,
+    math: 1, pass: 'math_2_ok', fail: 'math_2_no',
+  },
+
+  math_2_ok: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '✅ 正确。你对弦理论的背景也有了解——\n这在微分几何课上不太教的。\n\n（语气变柔和了一些）\n你是...自学的吗？',
+    choices: [{ text: '读过一些弦论相关的综述和科普。', next: 'math_3' }]
+  },
+
+  math_2_no: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '❌ 错了。10维=4维宏观+6维紧致化，\n6个实维对应3个复维度的 Calabi-Yau。\n\n（轻叹一声）\n不过...肯来听讲座，就是好的开始。',
+    choices: [{ text: '我会继续努力的！', next: 'math_3' }]
+  },
+
+  math_3: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '最后一题：' + pickMath(2).q,
+    math: 2, pass: 'math_3_ok', fail: 'math_3_no',
+  },
+
+  math_3_ok: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '✅ 完全正确。\n\n（放下咖啡杯。认真地看了你一眼。）\n\n很少有人能答对这个。Ricci 流是佩雷尔曼\n证明庞加莱猜想的关键——但大多数人只知道这个事实，\n并不理解 Ricci 曲率真正的几何意义。\n\n' + Q.beauty + '\n\n你...令我非常意外。',
+    choices: [{ text: '（被夸得有点不好意思）谢谢教授...', next: 'coffee_chat' }]
+  },
+
+  math_3_no: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '❌ 错了。Ricci 曲率度量的是体积元相对于平坦空间的偏离。\n\n（揉了揉太阳穴，但语气并不严厉）\n\n没关系。这题确实有难度。\n' + Q.persistence + '\n\n至少你今天来了。也敢答。这已经比大多数人强了。',
+    choices: [{ text: '谢谢老师鼓励！', next: 'coffee_chat' }]
+  },
+
+  // ===== DEEP TALK =====
+  coffee_chat: {
+    bg: 'cafe', portrait: true, speaker: '',
+    text: '数学测试结束了。\n但丘成桐没有要走的意思。\n\n窗外的夕阳把咖啡厅染成深琥珀色。\n他又点了一杯咖啡。\n\n沉默了一小会儿——',
+    next: 'coffee_deep',
+  },
+
+  coffee_deep: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: Q.truth + '\n\n' + Q.mountain + '\n\n当然...做学术也有学术的孤独。\n你花了十年证明一个猜想，\n但全世界能跟你一起庆祝的人，可能不到十个。\n\n（他看向窗外。语气中有一丝不易察觉的落寞。）\n\n你呢？你为什么学数学？',
+    choices: [
+      { text: '（认真地）我想成为那个能和你一起庆祝的人。让我努力追上你的脚步。', next: 'coffee_heart', aff: 25 },
+      { text: '（半开玩笑）教授，您现在是在招学生...还是在征婚？', next: 'coffee_flirt', aff: 15 },
+      { text: '说到这个——您觉得黎曼猜想在我们有生之年会被证明吗？', next: 'coffee_math', aff: 10 },
+    ]
+  },
+
+  coffee_heart: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '（沉默。整整五秒。）\n\n这句话...比刚才所有数学题的满分答案加在一起，\n都让我高兴。\n\n' + Q.calabi + '\n\n如果将来你也能体会到那种快乐——\n那今天这杯咖啡，就值了。\n\n他放下咖啡杯。从怀中掏出一张名片，\n背面用钢笔写了一个邮箱地址。\n\n"这是我的私人邮箱。不要发给别人。"',
+    choices: [
+      { text: '（郑重地接过名片，指尖微微颤抖）我一定不辜负您的期望。', next: 'coffee_end', aff: 15 },
+    ]
+  },
+
+  coffee_flirt: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '（被咖啡呛到。连咳了好几声。）\n\n咳咳——你...你这个学生，胆子不小。\n\n（但他没有否认。而且——他脸红了。\n丘成桐。菲尔兹奖得主。哈佛讲座教授。\n脸红了。）\n\n...学术伴侣这件事，当然要慎重考虑。\n不过...可以先从合作者开始。\n\n（假装低头搅咖啡，不敢看你。）',
+    choices: [
+      { text: '（内心狂喜，表面镇定）从合作者开始，我没意见。', next: 'coffee_end', aff: 15 },
+    ]
+  },
+
+  coffee_math: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '好问题！黎曼猜想——我相信它是对的，\n但证明它需要的工具可能还没被发明出来。\n\n' + Q.goodQ + '\n\n（他看你的眼神变了——\n不再是看学生的眼神，而是看同行的。）',
+    choices: [
+      { text: '也许那个工具，就藏在卡拉比-丘流形的某个模空间里。', next: 'coffee_end', aff: 10 },
+    ]
+  },
+
+  coffee_end: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '（站起身，整理西装。窗外最后一道夕阳在他身上镀了一层金边。）\n\n时间不早了。\n\n今天这杯咖啡——\n是我这几年喝过最愉快的一杯。\n\n下周三。同一时间。这里见？',
+    choices: [
+      { text: '一言为定。', next: 'ending_bridge' },
+    ]
+  },
+
+  // ===== ENDING =====
+  ending_bridge: {
+    bg: 'dream', portrait: false, speaker: '',
+    text: '', auto: true,
+  },
+
+  ending_calabi_yau: {
+    bg: 'cafe', portrait: true, speaker: '',
+    text: '三年后。\n\n你在丘成桐的指导下完成了博士论文——\n《卡拉比-丘流形上凯勒-里奇孤子的存在性》。\n\n答辩那天，他是评审委员会主席。\n当委员会宣布"一致通过，建议授予博士学位"时——',
+    next: 'ending_calabi_2',
+  },
+
+  ending_calabi_2: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '（站起身，越过桌子，握住你的手。）\n\n恭喜你，Dr.。\n\n（停顿。全场屏息。）\n\n不过——我还有一个私人问题想问你。\n\n（从西装内侧掏出一个黑色小盒子。\n不是放钢笔的那种。）\n\n愿不愿意...跟我一起研究一个终身的课题？\n\n题目就叫——"两个人的黎曼曲面"。',
+    choices: [
+      { text: '（热泪盈眶，用力点头）我愿意。', next: 'end_share' },
+    ]
+  },
+
+  ending_scholar: {
+    bg: 'cafe', portrait: true, speaker: '',
+    text: '你成为了丘成桐门下的博士生。\n\n那杯咖啡之后，你们的交流始终保持在学术层面——\n但你感觉得到，他是真心欣赏你。\n\n毕业那天。他拍了拍你的肩膀。',
+    next: 'ending_scholar_2',
+  },
+
+  ending_scholar_2: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: Q.teach + '\n\n你是我最优秀的学生之一。\n去走你自己的路吧。\n\n（他的眼神中有骄傲。也有一丝你读不懂的什么。）\n\n数学的世界很大。你的路，还很长。\n\n——也许，有些关系，做师生比做恋人更长久。',
+    choices: [
+      { text: '（深深鞠躬）谢谢您，丘老师。', next: 'end_share' },
+    ]
+  },
+
+  ending_quit: {
+    bg: 'cafe', portrait: true, speaker: '',
+    text: '咖啡厅里的数学测试，惨不忍睹。\n\n丘成桐叹了口气。放下咖啡杯。',
+    next: 'ending_quit_2',
+  },
+
+  ending_quit_2: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '同学...也许微分几何不太适合你。\n\n（语气温和，但每个字都锋利得像一把手术刀。）\n\n你有没有考虑过...转行学计算机？\n\n' + Q.mountain + '\n\n你的那座山——可能不在数学系。\n\n（三个月后，你成为了一名前端工程师。\nVibe Coding 让你如鱼得水。）\n\n——这也是一种 HE，对吧？',
+    choices: [
+      { text: '靠 AI 写代码也挺好的！人生不止微分几何！', next: 'end_share' },
+    ]
+  },
+
+  ending_dream: {
+    bg: 'library', portrait: false, speaker: '',
+    text: '你猛地惊醒。\n\n发现自己还趴在图书馆的桌子上。\n口水把《微分几何讲义》的第一页洇湿了一片。\n\n原来——刚才的一切，都只是一场梦。\n\n丘成桐。卡拉比-丘流形。咖啡厅。\n那张名片。那些话。\n\n你苦笑着，准备收拾东西回宿舍——\n\n然后，你发现了。',
+    next: 'ending_dream_2',
+  },
+
+  ending_dream_2: {
+    bg: 'library', portrait: false, speaker: '',
+    text: '书页之间，夹着一张名片。\n\n正面印着：\n"Shing-Tung Yau, Professor of Mathematics, Harvard University"\n\n背面。有人用钢笔，写了一行字——\n\n"下周三。同一时间。\n 这次别睡着了。\n —— S.T.Y."\n\n你猛地抬头，看向窗外。\n\n图书馆外的长椅上，\n一个穿着深蓝西装的身影，\n正朝你微微招手。\n\n' + Q.calabi,
+    choices: [
+      { text: '（冲出图书馆）丘教授——！！！', next: 'end_share' },
+    ]
+  },
+
+  end_share: {
+    bg: 'library', portrait: false, speaker: '',
+    text: '', ending: true,
+  },
+};
+
+// ============================
+// RENDER ENGINE
+// ============================
+
+function updateStatus() {
+  $affVal.textContent = affection;
+  $mathVal.textContent = mathCorrect + '/' + mathTotal;
+}
+
+function setBG(name) {
+  $scene.className = 'scene ' + (name || 'library');
+  // Show/hide room props
+  $chalkboard.style.display = name === 'lecture' ? 'block' : 'none';
+  $cafeWindow.style.display = name === 'cafe' ? 'block' : 'none';
+  // Update formula deco
+  const formulas = {
+    library: ['χ = V - E + F', 'c₁(X) = 0'],
+    lecture: ['∂g/∂t = -2Ric', 'Ric(ω) = λω'],
+    cafe: ['dim H¹,¹ = 1', '∫ c₁ ∧ ω^{n-1}'],
+    dream: ['R_{μν} = 0', 'SU(3) holonomy'],
+  };
+  const f = formulas[name] || formulas.library;
+  $formula1.textContent = f[0];
+  $formula2.textContent = f[1];
+  // Refresh particles
+  spawnParticles();
+}
+
+function setPortrait(show) {
+  if (show) {
+    $charArea.innerHTML = YAU_SVG;
+    $charArea.classList.add('show');
+  } else {
+    $charArea.innerHTML = NO_PORTRAIT_SVG;
+    $charArea.classList.add('show');
+  }
+}
+
+function setSpeaker(name) {
+  if (name) {
+    $speaker.textContent = name;
+    $speaker.className = 'speaker-name';
+    $nameTag.textContent = name;
+    $nameTag.classList.add('show');
+  } else {
+    $speaker.textContent = '';
+    $speaker.className = 'speaker-name narrator';
+    $nameTag.classList.remove('show');
+  }
+}
+
+async function typeText(text, el) {
+  el.textContent = '';
+  el.classList.add('typing-cursor');
+  for (let i = 0; i < text.length; i++) {
+    el.textContent += text[i];
+    await sleep(text[i] === '\n' ? 70 : 20);
+  }
+  el.classList.remove('typing-cursor');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function showChoicesDOM(choices) {
+  $choices.innerHTML = '';
+  $choices.style.display = 'flex';
+  choices.forEach((ch, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="num">${i + 1}</span>${ch.text}`;
+    btn.addEventListener('click', () => handleChoice(ch));
+    $choices.appendChild(btn);
+  });
+  awaitingInput = true;
+}
+
+function showMathDOM(problem, passScene, failScene) {
+  $choices.innerHTML = '';
+  $choices.style.display = 'flex';
+  problem.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'math-btn';
+    btn.innerHTML = `<span class="num">${'ABCD'[i]}</span>${opt}`;
+    btn.addEventListener('click', () => {
+      mathTotal++;
+      if (i === problem.ans) {
+        mathCorrect++; affection += 10; updateStatus();
+        flashPop(true);
+        handleScene(passScene);
+      } else {
+        affection -= 5; updateStatus();
+        flashPop(false);
+        $choices.style.display = 'none';
+        $dialogue.textContent = '❌ 不对。' + (problem.hint || '');
+        sleep(1500).then(() => handleScene(failScene));
+      }
+    });
+    $choices.appendChild(btn);
+  });
+  awaitingInput = true;
+}
+
+function flashPop(ok) {
+  const el = document.createElement('div');
+  el.className = 'result-pop ' + (ok ? 'ok' : 'no');
+  el.textContent = ok ? '✅ 正确！ +好感' : '❌ 错误！';
+  document.querySelector('.phone').appendChild(el);
+  setTimeout(() => el.remove(), 1700);
+}
+
+function showEndingButtons() {
+  $choices.innerHTML = '';
+  $choices.style.display = 'flex';
+  [
+    { cls: 'choice-btn', label: 'S', text: '生成分享卡片，发知乎想法', action: generateShareCard },
+    { cls: 'choice-btn', label: 'R', text: '重新开始', action: resetGame },
+  ].forEach(({ cls, label, text, action }) => {
+    const btn = document.createElement('button');
+    btn.className = cls;
+    btn.innerHTML = `<span class="num">${label}</span>${text}`;
+    btn.addEventListener('click', action);
+    $choices.appendChild(btn);
+  });
+  awaitingInput = true;
+}
+
+// ---- PARTICLES ----
+function spawnParticles() {
+  const symbols = ['∂', '∫', 'π', '∑', '∇', '∞', 'χ', 'Ric', 'g', 'ω', 'd', 'Δ', '⊗', '⊕', 'c₁', 'H²', 'Rμν', 'Re', 'Im', 'SU(3)'];
+  $particles.innerHTML = '';
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    p.style.left = Math.random() * 95 + '%';
+    p.style.top = (60 + Math.random() * 40) + '%';
+    p.style.animationDelay = Math.random() * 8 + 's';
+    p.style.animationDuration = (6 + Math.random() * 10) + 's';
+    p.style.fontSize = (10 + Math.random() * 14) + 'px';
+    $particles.appendChild(p);
+  }
+}
+
+// ============================
+// GAME LOGIC
+// ============================
+
+async function handleChoice(ch) {
+  if (!awaitingInput) return;
+  awaitingInput = false;
+  $choices.style.display = 'none';
+  if (ch.aff) {
+    affection += ch.aff;
+    if (affection > 100) affection = 100;
+    if (affection < 0) affection = 0;
+    updateStatus();
+  }
+  history.push({ scene: currentScene, choice: ch.text });
+  await handleScene(ch.next);
+}
+
+async function handleScene(sceneId) {
+  currentScene = sceneId;
+  const s = scenes[sceneId];
+  if (!s) return console.error('Missing:', sceneId);
+
+  if (s.bg) setBG(s.bg);
+  if (s.portrait !== undefined) setPortrait(s.portrait);
+  setSpeaker(s.speaker || '');
+
+  // Math problem
+  if (s.math !== undefined) {
+    await typeText(s.text, $dialogue);
+    showMathDOM(pickMath(s.math), s.pass, s.fail);
+    return;
+  }
+
+  // Auto (ending bridge)
+  if (s.auto) {
+    const lines = [
+      '═══════════════════════════',
+      '  故事暂告一段落...',
+      '  正在计算你的结局...',
+      '',
+      `  ❤ 最终好感度: ${affection}`,
+      `  📐 数学成绩: ${mathCorrect} / ${mathTotal}`,
+      '═══════════════════════════',
+    ];
+    setBG('dream'); setPortrait(false); setSpeaker('');
+    await typeText(lines.join('\n'), $dialogue);
+    await sleep(1000);
+    determineEnding();
+    return;
+  }
+
+  // Ending scene
+  if (s.ending) {
+    $choices.style.display = 'none';
+    showEndingButtons();
+    window._currentEnding = getEndingData();
+    return;
+  }
+
+  // Normal scene
+  if (s.text) await typeText(s.text, $dialogue);
+
+  if (s.choices && s.choices.length > 0) {
+    showChoicesDOM(s.choices);
+  } else if (s.next) {
+    await sleep(700);
+    await handleScene(s.next);
+  }
+}
+
+function determineEnding() {
+  if (affection >= 75 && mathCorrect >= 3) handleScene('ending_calabi_yau');
+  else if (affection >= 50 && mathCorrect >= 2) handleScene('ending_scholar');
+  else if (affection >= 30) handleScene('ending_dream');
+  else handleScene('ending_quit');
+}
+
+function getEndingData() {
+  const map = {
+    ending_calabi_yau: { name: '卡拉比-丘之约', quote: '愿我们的爱情像卡拉比-丘流形一样——紧凑、Ricci-平坦、充满隐藏的维度。' },
+    ending_scholar: { name: '学术之路', quote: '数学是永恒的。而某些相遇，让它变得更美。' },
+    ending_quit: { name: '数学劝退', quote: '人生不是只有微分几何。写代码也能改变世界——而且工资更高。' },
+    ending_dream: { name: '黄粱一梦', quote: '有些相遇，发生在微分几何的夹缝中，比现实更真实。' },
+  };
+  for (const [k, v] of Object.entries(map)) {
+    if (currentScene === k || history.some(h => h.scene === k)) return v;
+  }
+  return map.ending_dream;
+}
+
+// ============================
+// SHARE CARD (enhanced visual)
+// ============================
+
+function generateShareCard() {
+  const ending = getEndingData();
+  const canvas = document.getElementById('share-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // BG gradient
+  const bg = ctx.createLinearGradient(0, 0, 800, 500);
+  bg.addColorStop(0, '#1a1525'); bg.addColorStop(0.5, '#1c2748'); bg.addColorStop(1, '#0f0f1a');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, 800, 500);
+
+  // Decorative math formulas
+  ctx.font = '13px "Courier New",monospace';
+  ctx.fillStyle = 'rgba(201,169,110,0.06)';
+  const deco = ['∂g/∂t=-2Ric','c₁(X)=0','χ=V-E+F','Ric(ω)=0','dimH¹,¹=1','R_{μν}=0','(M,ω)Kähler','SU(3)','∧*T*X','Ω^{p,q}'];
+  for (let i = 0; i < 30; i++) {
+    ctx.fillText(deco[i % deco.length], Math.random() * 750, Math.random() * 480);
+  }
+
+  // Outer decorative border
+  ctx.strokeStyle = 'rgba(201,169,110,0.15)'; ctx.lineWidth = 3;
+  ctx.strokeRect(15, 15, 770, 470);
+  ctx.strokeStyle = 'rgba(201,169,110,0.3)'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(22, 22, 756, 456);
+
+  // Corner ornaments
+  const corners = [[30,30],[770,30],[30,470],[770,470]];
+  corners.forEach(([x, y]) => {
+    const dx = x === 30 ? 1 : -1;
+    const dy = y === 30 ? 1 : -1;
+    ctx.strokeStyle = 'rgba(201,169,110,0.4)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, y + 20*dy); ctx.lineTo(x, y); ctx.lineTo(x + 20*dx, y); ctx.stroke();
+  });
+
+  // Title
+  ctx.fillStyle = '#c9a96e'; ctx.font = 'bold 28px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'center'; ctx.fillText('丘成桐版恋与制作人', 400, 75);
+
+  ctx.fillStyle = 'rgba(201,169,110,0.5)'; ctx.font = '13px "Courier New",monospace';
+  ctx.fillText('YAU LOVE PRODUCER', 400, 100);
+
+  // Gold divider with diamond
+  ctx.strokeStyle = 'rgba(201,169,110,0.5)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(120, 118); ctx.lineTo(380, 118); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(420, 118); ctx.lineTo(680, 118); ctx.stroke();
+  // Diamond
+  ctx.fillStyle = '#c9a96e';
+  ctx.beginPath(); ctx.moveTo(400, 110); ctx.lineTo(406, 118); ctx.lineTo(400, 126); ctx.lineTo(394, 118); ctx.closePath(); ctx.fill();
+
+  // Stats
+  const left = 240;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#888'; ctx.font = '17px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.fillText('最终好感度', left, 170);
+  ctx.fillText('数学正确率', left, 210);
+  ctx.fillText('达成结局', left, 250);
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#e8919c'; ctx.font = 'bold 19px "Courier New",monospace';
+  ctx.fillText(affection + ' / 100', left + 16, 170);
+  // Heart bar
+  const barW = 140, barX = left + 16;
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(barX, 176, barW, 6);
+  ctx.fillStyle = '#e8919c';
+  ctx.fillRect(barX, 176, barW * affection / 100, 6);
+
+  ctx.fillStyle = '#6b8cce'; ctx.font = 'bold 19px "Courier New",monospace';
+  ctx.fillText(mathCorrect + ' / ' + mathTotal + (mathTotal > 0 ? '  (' + Math.round(mathCorrect/mathTotal*100) + '%)' : ''), left + 16, 210);
+
+  ctx.fillStyle = '#c9a96e'; ctx.font = 'bold 19px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.fillText(ending.name, left + 16, 250);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(201,169,110,0.25)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(120, 280); ctx.lineTo(680, 280); ctx.stroke();
+
+  // Ending badge
+  const badgeColors = {
+    '卡拉比-丘之约': ['#c9a96e', '#e0c78a', '🏆'],
+    '学术之路': ['#6b8cce', '#b0c4e8', '📚'],
+    '数学劝退': ['#999', '#ccc', '💻'],
+    '黄粱一梦': ['#b496c9', '#d4c0e8', '💫'],
+  };
+  const badge = badgeColors[ending.name] || badgeColors['黄粱一梦'];
+  ctx.fillStyle = badge[0]; ctx.font = 'italic 16px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'center';
+  const q = '"' + ending.quote + '"';
+  if (q.length > 32) {
+    const mid = Math.floor(q.length / 2);
+    let split = mid;
+    for (const sep of ['，', '、', '；', ',', ' ']) {
+      const idx = q.indexOf(sep, mid - 8);
+      if (idx > 0 && idx < mid + 8) { split = idx + 1; break; }
+    }
+    ctx.fillText(q.substring(0, split), 400, 320);
+    ctx.fillText(q.substring(split), 400, 345);
+  } else {
+    ctx.fillText(q, 400, 332);
+  }
+
+  // Footer
+  ctx.fillStyle = '#666'; ctx.font = '12px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.fillText('发布于 知乎 · #丘成桐版恋与制作人 · #Let\'s学习杯打卡挑战赛', 400, 410);
+  ctx.fillStyle = '#444'; ctx.font = '10px monospace';
+  ctx.fillText('yau-love-producer v2.0 · made with ❤️ + vibe coding', 400, 445);
+
+  document.getElementById('share-img').src = canvas.toDataURL('image/png');
+  document.getElementById('share-panel').classList.add('show');
+}
+
+function closeShare() { document.getElementById('share-panel').classList.remove('show'); }
+
+function downloadShare() {
+  const a = document.createElement('a');
+  a.download = '丘成桐版恋与制作人_分享卡.png';
+  a.href = document.getElementById('share-canvas').toDataURL('image/png');
+  a.click();
+}
+
+function copyShareText() {
+  const ending = getEndingData();
+  navigator.clipboard.writeText(
+    `我在「丘成桐版恋与制作人」中达成了【${ending.name}】结局！\n\n❤ 好感度: ${affection}/100 | 📐 数学: ${mathCorrect}/${mathTotal}\n\n"${ending.quote}"\n\n来试试你能拿下丘教授的芳心吗？\n#丘成桐版恋与制作人 #Let's学习杯打卡挑战赛`
+  ).then(() => toast('文案已复制！去知乎粘贴发布吧~'));
+}
+
+function goZhihu() { copyShareText(); window.open('https://www.zhihu.com/pin', '_blank'); }
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#c9a96e;padding:10px 24px;border:1px solid #c9a96e;border-radius:20px;z-index:2000;font-size:0.85em;';
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2500);
+}
+
+function resetGame() {
+  affection = 30; mathCorrect = 0; mathTotal = 0; history = [];
+  currentScene = 'start';
+  document.getElementById('share-panel').classList.remove('show');
+  $choices.style.display = 'none'; updateStatus();
+  handleScene('start');
+}
+
+// ---- Keyboard ----
+document.addEventListener('keydown', e => {
+  if (!awaitingInput) return;
+  if (e.key >= '1' && e.key <= '4') {
+    const btns = $choices.querySelectorAll('.choice-btn');
+    if (btns[parseInt(e.key) - 1]) btns[parseInt(e.key) - 1].click();
+  }
+  if (e.key >= 'a' && e.key <= 'd') {
+    const btns = $choices.querySelectorAll('.math-btn');
+    if (btns[e.key.charCodeAt(0) - 97]) btns[e.key.charCodeAt(0) - 97].click();
+  }
+  if (e.key === 's' || e.key === 'S') {
+    const b = Array.from($choices.querySelectorAll('.choice-btn')).find(b => b.textContent.includes('分享'));
+    if (b) b.click();
+  }
+  if (e.key === 'r' || e.key === 'R') {
+    const b = Array.from($choices.querySelectorAll('.choice-btn')).find(b => b.textContent.includes('重新开始'));
+    if (b) b.click();
+  }
+});
+
+// ============================
+// LAUNCH
+// ============================
+updateStatus();
+handleScene('start');
+</script>
+</body>
+</html>
