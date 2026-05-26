@@ -1234,7 +1234,8 @@ async function handleScene(sceneId) {
 
 function determineEnding() {
   // 2×3 matrix: math(academic) × affection(romance)
-  if (mathCorrect >= 1) {
+  // Top row: 3/3 perfect math. Bottom row: 0-2 correct.
+  if (mathCorrect === 3) {
     if (affection >= 65) resolvedEnding = 'ending_calabi_yau';
     else if (affection >= 35) resolvedEnding = 'ending_scholar';
     else resolvedEnding = 'ending_dream';
