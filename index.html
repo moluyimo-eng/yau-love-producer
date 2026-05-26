@@ -443,6 +443,7 @@ const $particles = document.getElementById('particles');
 let affection = 30, mathCorrect = 0, mathTotal = 0;
 let currentScene = 'start', awaitingInput = false;
 let history = [];
+let resolvedEnding = null; // track which ending scene was determined
 
 // ---- YAU QUOTES (real) ----
 const Q = {
@@ -1082,10 +1083,11 @@ async function handleScene(sceneId) {
 }
 
 function determineEnding() {
-  if (affection >= 70 && mathCorrect >= 2) handleScene('ending_calabi_yau');
-  else if (affection >= 45 && mathCorrect >= 1) handleScene('ending_scholar');
-  else if (affection >= 25) handleScene('ending_dream');
-  else handleScene('ending_quit');
+  if (affection >= 70 && mathCorrect >= 2) resolvedEnding = 'ending_calabi_yau';
+  else if (affection >= 45 && mathCorrect >= 1) resolvedEnding = 'ending_scholar';
+  else if (affection >= 25) resolvedEnding = 'ending_dream';
+  else resolvedEnding = 'ending_quit';
+  handleScene(resolvedEnding);
 }
 
 function getEndingData() {
@@ -1111,10 +1113,7 @@ function getEndingData() {
       summary: '你追出图书馆，丘成桐已经登上回哈佛的航班。失魂落魄之时，在篮球场边遇到了正在自学微分几何的蔡徐坤——他说想考研，你说我来教你。于是，在篮球与炸鸡的加持下，新的爱情故事开始了。'
     },
   };
-  for (const [k, v] of Object.entries(map)) {
-    if (currentScene === k || history.some(h => h.scene === k)) return v;
-  }
-  return map.ending_dream;
+  return map[resolvedEnding] || map.ending_dream;
 }
 
 // ============================
@@ -1286,6 +1285,7 @@ function toast(msg) {
 
 function resetGame() {
   affection = 30; mathCorrect = 0; mathTotal = 0; history = [];
+  resolvedEnding = null;
   currentScene = 'start';
   document.getElementById('share-panel').classList.remove('show');
   $choices.style.display = 'none'; updateStatus();
