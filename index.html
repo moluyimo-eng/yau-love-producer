@@ -979,9 +979,9 @@ async function handleScene(sceneId) {
 }
 
 function determineEnding() {
-  if (affection >= 75 && mathCorrect >= 3) handleScene('ending_calabi_yau');
-  else if (affection >= 50 && mathCorrect >= 2) handleScene('ending_scholar');
-  else if (affection >= 30) handleScene('ending_dream');
+  if (affection >= 70 && mathCorrect >= 2) handleScene('ending_calabi_yau');
+  else if (affection >= 45 && mathCorrect >= 1) handleScene('ending_scholar');
+  else if (affection >= 25) handleScene('ending_dream');
   else handleScene('ending_quit');
 }
 
