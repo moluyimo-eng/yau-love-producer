@@ -253,6 +253,13 @@
     .character-area { width: 70%; height: 60%; }
     .formula-overlay { display: none; }
   }
+
+  /* ---- Fireworks ---- */
+  #fireworks-canvas {
+    position: absolute; inset: 0; pointer-events: none; z-index: 100;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  #fireworks-canvas.active { opacity: 1; }
 </style>
 </head>
 <body>
@@ -267,6 +274,8 @@
     <div class="bg-window" id="cafe-window" style="display:none"></div>
     <!-- Floating particles -->
     <div class="particles" id="particles"></div>
+    <!-- Fireworks -->
+    <canvas id="fireworks-canvas"></canvas>
     <!-- Math formula overlay -->
     <div class="formula-overlay" id="formula1">∂g/∂t = -2Ric</div>
     <div class="formula-overlay line2" id="formula2">c₁(X) = 0</div>
@@ -874,6 +883,75 @@ function flashPop(ok) {
   setTimeout(() => el.remove(), 1700);
 }
 
+// ---- FIREWORKS ----
+let fireworksRunning = false;
+function launchFireworks() {
+  const canvas = document.getElementById('fireworks-canvas');
+  const phone = document.querySelector('.phone');
+  canvas.width = phone.clientWidth;
+  canvas.height = phone.clientHeight;
+  canvas.classList.add('active');
+  const ctx = canvas.getContext('2d');
+
+  const particles = [];
+  const colors = ['#ffd700','#ff6b9d','#ff4444','#44ff88','#6b8cce','#ff9f43','#ff66cc','#00ffcc'];
+
+  function burst(x, y) {
+    const count = 40 + Math.random() * 30;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 6;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.008 + Math.random() * 0.02,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 2 + Math.random() * 3,
+      });
+    }
+  }
+
+  function frame() {
+    if (!fireworksRunning) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Random bursts
+    if (Math.random() < 0.15) {
+      burst(
+        canvas.width * 0.2 + Math.random() * canvas.width * 0.6,
+        canvas.height * 0.1 + Math.random() * canvas.height * 0.5
+      );
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.04; // gravity
+      p.life -= p.decay;
+
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+
+  fireworksRunning = true;
+  frame();
+  setTimeout(() => {
+    fireworksRunning = false;
+    canvas.classList.remove('active');
+  }, 5000);
+}
+
 function showEndingButtons() {
   $choices.innerHTML = '';
   $choices.style.display = 'flex';
@@ -963,7 +1041,9 @@ async function handleScene(sceneId) {
   if (s.ending) {
     $choices.style.display = 'none';
     showEndingButtons();
-    window._currentEnding = getEndingData();
+    const ed = getEndingData();
+    window._currentEnding = ed;
+    if (ed.name === '卡拉比-丘之约') launchFireworks();
     return;
   }
 
@@ -987,10 +1067,26 @@ function determineEnding() {
 
 function getEndingData() {
   const map = {
-    ending_calabi_yau: { name: '卡拉比-丘之约', quote: '做学问，第一要有品位，第二要有品位，第三还是要有品位——而你，是我这辈子见过的最好的品位。' },
-    ending_scholar: { name: '学术之路', quote: '数学的美在于它的简洁和深刻。你就像那个定理——我一眼就感受到了你的力量。' },
-    ending_quit: { name: '数学劝退', quote: '你的那座山也许不叫微分几何。去找吧——数学不是算数，数学是一种文化。而文化，不只有数学这一种。' },
-    ending_dream: { name: '黄粱一梦', quote: '好的数学家要会问好的问题。下次见面的时候，我希望你带着你的问题来。这次别睡着了。' },
+    ending_calabi_yau: {
+      name: '卡拉比-丘之约',
+      quote: '做学问，第一要有品位，第二要有品位，第三还是要有品位——而你，是我这辈子见过的最好的品位。',
+      summary: '婚后日常：早上丘成桐用 Ricci 流给你热咖啡，中午一起在六个隐藏维度里捉迷藏，晚上睡前故事是"爸爸怎么证明的卡拉比猜想"。蜜月旅行地点：卡拉比-丘流形的模空间——反正无限维，一辈子逛不完。'
+    },
+    ending_scholar: {
+      name: '学术之路',
+      quote: '数学的美在于它的简洁和深刻。你就像那个定理——我一眼就感受到了你的力量。',
+      summary: '你成了他的关门弟子。后来在知乎开了账号专答微分几何，粉丝百万，带货"卡拉比-丘流形同款马克杯"月销过万。丘老师偶尔点赞，从不评论——但你的每条想法他都截图存了文件夹。'
+    },
+    ending_quit: {
+      name: '数学劝退',
+      quote: '你的那座山也许不叫微分几何。去找吧——数学不是算数，数学是一种文化。而文化，不只有数学这一种。',
+      summary: '转行计算机后你如鱼得水，三年后用神经网络证明了黎曼猜想。丘成桐发来贺电："你看，我说对了吧。你的山不在数学系——在山的那边的计算机系。"你又请他喝了一杯咖啡，这次你请客。'
+    },
+    ending_dream: {
+      name: '黄粱一梦',
+      quote: '好的数学家要会问好的问题。下次见面的时候，我希望你带着你的问题来。这次别睡着了。',
+      summary: '你追出图书馆，丘成桐已经登上回哈佛的航班。失魂落魄之时，在篮球场边遇到了正在自学微分几何的蔡徐坤——他说想考研，你说我来教你。于是，在篮球与炸鸡的加持下，新的爱情故事开始了。'
+    },
   };
   for (const [k, v] of Object.entries(map)) {
     if (currentScene === k || history.some(h => h.scene === k)) return v;
@@ -1050,63 +1146,84 @@ function generateShareCard() {
   ctx.fillStyle = '#c9a96e';
   ctx.beginPath(); ctx.moveTo(400, 110); ctx.lineTo(406, 118); ctx.lineTo(400, 126); ctx.lineTo(394, 118); ctx.closePath(); ctx.fill();
 
-  // Stats
-  const left = 240;
+  // Stats (compact 2-line)
+  const left = 200;
   ctx.textAlign = 'right';
-  ctx.fillStyle = '#888'; ctx.font = '17px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
-  ctx.fillText('最终好感度', left, 170);
-  ctx.fillText('数学正确率', left, 210);
-  ctx.fillText('达成结局', left, 250);
+  ctx.fillStyle = '#888'; ctx.font = '15px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.fillText('好感度', left, 160);
+  ctx.fillText('数学', left, 185);
 
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#e8919c'; ctx.font = 'bold 19px "Courier New",monospace';
-  ctx.fillText(affection + ' / 100', left + 16, 170);
-  // Heart bar
-  const barW = 140, barX = left + 16;
+  ctx.fillStyle = '#e8919c'; ctx.font = 'bold 17px "Courier New",monospace';
+  ctx.fillText(affection + ' / 100', left + 12, 160);
+  const barW = 120, barX = left + 12;
   ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.fillRect(barX, 176, barW, 6);
+  ctx.fillRect(barX, 164, barW, 5);
   ctx.fillStyle = '#e8919c';
-  ctx.fillRect(barX, 176, barW * affection / 100, 6);
+  ctx.fillRect(barX, 164, barW * affection / 100, 5);
 
-  ctx.fillStyle = '#6b8cce'; ctx.font = 'bold 19px "Courier New",monospace';
-  ctx.fillText(mathCorrect + ' / ' + mathTotal + (mathTotal > 0 ? '  (' + Math.round(mathCorrect/mathTotal*100) + '%)' : ''), left + 16, 210);
+  ctx.fillStyle = '#6b8cce'; ctx.font = 'bold 17px "Courier New",monospace';
+  ctx.fillText(mathCorrect + ' / ' + mathTotal + (mathTotal > 0 ? '  (' + Math.round(mathCorrect/mathTotal*100) + '%)' : ''), left + 12, 185);
 
-  ctx.fillStyle = '#c9a96e'; ctx.font = 'bold 19px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
-  ctx.fillText(ending.name, left + 16, 250);
-
-  // Divider
-  ctx.strokeStyle = 'rgba(201,169,110,0.25)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(120, 280); ctx.lineTo(680, 280); ctx.stroke();
-
-  // Ending badge
+  // Ending name badge
   const badgeColors = {
-    '卡拉比-丘之约': ['#c9a96e', '#e0c78a', '🏆'],
-    '学术之路': ['#6b8cce', '#b0c4e8', '📚'],
-    '数学劝退': ['#999', '#ccc', '💻'],
-    '黄粱一梦': ['#b496c9', '#d4c0e8', '💫'],
+    '卡拉比-丘之约': ['#c9a96e', '🏆'],
+    '学术之路': ['#6b8cce', '📚'],
+    '数学劝退': ['#999', '💻'],
+    '黄粱一梦': ['#b496c9', '💫'],
   };
   const badge = badgeColors[ending.name] || badgeColors['黄粱一梦'];
-  ctx.fillStyle = badge[0]; ctx.font = 'italic 16px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = badge[0]; ctx.font = 'bold 18px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
   ctx.textAlign = 'center';
-  const q = '"' + ending.quote + '"';
-  if (q.length > 32) {
+  ctx.fillText(badge[1] + ' ' + ending.name, 400, 220);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(201,169,110,0.3)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(100, 240); ctx.lineTo(700, 240); ctx.stroke();
+
+  // Summary — the main content
+  ctx.fillStyle = '#d4c5a9'; ctx.font = '15px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'left';
+  const summary = ending.summary || '';
+  const maxW = 640;
+  const words = summary.split('');
+  let line = '', y = 268, lineH = 26, x0 = 80;
+  for (let i = 0; i < words.length; i++) {
+    const test = line + words[i];
+    if (ctx.measureText(test).width > maxW && line.length > 0) {
+      ctx.fillText(line, x0, y);
+      line = words[i];
+      y += lineH;
+    } else {
+      line = test;
+    }
+  }
+  if (line) ctx.fillText(line, x0, y);
+  y += lineH + 8;
+
+  // Quote
+  ctx.fillStyle = 'rgba(201,169,110,0.7)'; ctx.font = 'italic 14px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'center';
+  const q = '—— "' + ending.quote + '"';
+  if (ctx.measureText(q).width > 640) {
     const mid = Math.floor(q.length / 2);
     let split = mid;
-    for (const sep of ['，', '、', '；', ',', ' ']) {
-      const idx = q.indexOf(sep, mid - 8);
-      if (idx > 0 && idx < mid + 8) { split = idx + 1; break; }
+    for (const sep of ['，', '、', '；']) {
+      const idx = q.indexOf(sep, mid - 6);
+      if (idx > 0 && idx < mid + 6) { split = idx + 1; break; }
     }
-    ctx.fillText(q.substring(0, split), 400, 320);
-    ctx.fillText(q.substring(split), 400, 345);
+    ctx.fillText(q.substring(0, split), 400, y);
+    ctx.fillText(q.substring(split), 400, y + 22);
+    y += 22;
   } else {
-    ctx.fillText(q, 400, 332);
+    ctx.fillText(q, 400, y);
   }
 
   // Footer
-  ctx.fillStyle = '#666'; ctx.font = '12px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
-  ctx.fillText('发布于 知乎 · #丘成桐版恋与制作人 · #Let\'s学习杯打卡挑战赛', 400, 410);
+  ctx.fillStyle = '#666'; ctx.font = '11px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  ctx.fillText('发布于 知乎 · #丘成桐版恋与制作人 · #Let\'s学习杯打卡挑战赛', 400, 430);
   ctx.fillStyle = '#444'; ctx.font = '10px monospace';
-  ctx.fillText('yau-love-producer v2.0 · made with ❤️ + vibe coding', 400, 445);
+  ctx.fillText('yau-love-producer v2.0 · made with ❤️ + vibe coding', 400, 460);
 
   document.getElementById('share-img').src = canvas.toDataURL('image/png');
   document.getElementById('share-panel').classList.add('show');
@@ -1124,7 +1241,7 @@ function downloadShare() {
 function copyShareText() {
   const ending = getEndingData();
   navigator.clipboard.writeText(
-    `我在「丘成桐版恋与制作人」中达成了【${ending.name}】结局！\n\n❤ 好感度: ${affection}/100 | 📐 数学: ${mathCorrect}/${mathTotal}\n\n"${ending.quote}"\n\n来试试你能拿下丘教授的芳心吗？\n#丘成桐版恋与制作人 #Let's学习杯打卡挑战赛`
+    `我在「丘成桐版恋与制作人」中达成了【${ending.name}】结局！\n\n❤ 好感度: ${affection}/100 | 📐 数学: ${mathCorrect}/${mathTotal}\n\n📖 结局：${ending.summary}\n\n"${ending.quote}"\n\n来试试你能拿下丘教授的芳心吗？\n#丘成桐版恋与制作人 #Let's学习杯打卡挑战赛`
   ).then(() => toast('文案已复制！去知乎粘贴发布吧~'));
 }
 
