@@ -999,7 +999,7 @@ function showMathDOM(problem, passScene, failScene) {
     btn.addEventListener('click', () => {
       mathTotal++;
       if (i === problem.ans) {
-        mathCorrect++; affection += 10; updateStatus();
+        mathCorrect++; affection += 5; updateStatus();
         flashPop(true);
         handleScene(passScene);
       } else {
@@ -1019,7 +1019,7 @@ function showMathDOM(problem, passScene, failScene) {
 function flashPop(ok) {
   const el = document.createElement('div');
   el.className = 'result-pop ' + (ok ? 'ok' : 'no');
-  el.textContent = ok ? '✅ 正确！ +好感' : '❌ 错误！';
+  el.textContent = ok ? '✅ 正确！ +5' : '❌ 错误！ -5';
   document.querySelector('.phone').appendChild(el);
   setTimeout(() => el.remove(), 1700);
 }
