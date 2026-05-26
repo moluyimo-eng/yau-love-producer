@@ -895,6 +895,35 @@ const scenes = {
     ]
   },
 
+  // ===== NEW ENDINGS =====
+  ending_breakup: {
+    bg: 'cafe', portrait: true, speaker: '',
+    text: '你们约会了。\n\n准确地说是——约会了十七次。\n\n在清华园散步，在波士顿吃龙虾，在 MIT 的教室里\n他掏出粉笔在黑板边写公式边跟你调情。\n\n那段时间，所有人都以为你们会结婚。\n\n直到有一天——',
+    next: 'ending_breakup_2',
+  },
+
+  ending_breakup_2: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '（放下咖啡杯。沉默了整整两分钟。）\n\n我喜欢你。真的。\n\n但是——\n\n（他揉了揉太阳穴，这个动作你见过无数次了——\n每次学生答错基础题，他就会这样。）\n\n' + Q.passion + '\n\n而你……你甚至不愿意翻开我送你的那本\n《微分几何讲义》。\n\n（他的声音没有愤怒，只有一种深沉的失望。）\n\n爱情可以没有数学。\n但我的人生里，数学和爱情不能分开。\n\n' + Q.upstream + '\n\n（站起身。整理西装。这次——不是去讲台，\n而是走向门口。）\n\n你很好。只是我们不适合。\n\n（门关上了。咖啡还没凉。）\n\n（六个月后，你听说他在哈佛的讲座上\n认识了一个能徒手解 Ricci 流方程的博士后。\n你删了他的微信。然后加回来。又删了。）',
+    choices: [
+      { text: '（低头看着那本落灰的《微分几何讲义》）也许……我该翻开第一页了。', next: 'end_share' },
+    ]
+  },
+
+  ending_almost: {
+    bg: 'cafe', portrait: true, speaker: '',
+    text: '那杯咖啡之后，你们又喝过几次。\n\n不多。三五次吧。每次聊得还算开心，\n但总差了点什么。\n\n你说不出那是什么。\n也许是他讲镜像对称时你走神了。\n也许是你讲你的生活时他看了看表。\n\n最后一次咖啡。',
+    next: 'ending_almost_2',
+  },
+
+  ending_almost_2: {
+    bg: 'cafe', portrait: true, speaker: '丘成桐',
+    text: '（搅着咖啡，欲言又止。）\n\n你是个很有意思的人。\n\n' + Q.simpler + '\n\n但是数学和人生，都要讲究"对偶"。\n庞加莱对偶——你听过吗？\n几何和拓扑，一对完美的搭档。\n缺一个，美就不完整。\n\n（放下搅拌棒。）\n\n我们之间……还差那么一个维度。\n也许是时间。也许是别的东西。\n\n' + Q.read + '\n\n（他站起身。这次没有整理西装。）\n\n保持联系吧。\n\n（你点点头。但你知道——"保持联系"\n是成年人世界里最温柔的告别。）\n\n（后来你在知乎关注了他。\n他发了几篇关于卡拉比-丘流形的科普文章，\n你点了赞。他没回关。\n但也可能是——他太忙了。\n对吧？）',
+    choices: [
+      { text: '（苦笑）是啊。保持联系。', next: 'end_share' },
+    ]
+  },
+
   end_share: {
     bg: 'library', portrait: false, speaker: '',
     text: '', ending: true,
@@ -1203,10 +1232,16 @@ async function handleScene(sceneId) {
 }
 
 function determineEnding() {
-  if (affection >= 65 && mathCorrect >= 2) resolvedEnding = 'ending_calabi_yau';
-  else if (affection >= 35 && mathCorrect >= 1) resolvedEnding = 'ending_scholar';
-  else if (affection >= 15) resolvedEnding = 'ending_dream';
-  else resolvedEnding = 'ending_quit';
+  // 2×3 matrix: math(academic) × affection(romance)
+  if (mathCorrect >= 2) {
+    if (affection >= 65) resolvedEnding = 'ending_calabi_yau';
+    else if (affection >= 35) resolvedEnding = 'ending_scholar';
+    else resolvedEnding = 'ending_dream';
+  } else {
+    if (affection >= 65) resolvedEnding = 'ending_breakup';
+    else if (affection >= 35) resolvedEnding = 'ending_almost';
+    else resolvedEnding = 'ending_quit';
+  }
   handleScene(resolvedEnding);
 }
 
@@ -1224,13 +1259,23 @@ function getEndingData() {
     },
     ending_quit: {
       name: '数学劝退',
-      quote: '你的那座山也许不叫微分几何。去找吧——数学不是算数，数学是一种文化。而文化，不只有数学这一种。',
-      summary: '转行计算机后你如鱼得水，三年后用神经网络证明了黎曼猜想。丘成桐发来贺电："你看，我说对了吧。你的山不在数学系——在山的那边的计算机系。"你又请他喝了一杯咖啡，这次你请客。'
+      quote: '你的那座山也许不叫微分几何。去找吧——数学不是算数，数学是一种文化。',
+      summary: '你含泪转行，结果成了前端大神。Vibe Coding 让你年薪百万。偶尔刷到丘成桐的新闻，你会想：那杯咖啡真贵——但值。'
     },
     ending_dream: {
       name: '黄粱一梦',
       quote: '好的数学家要会问好的问题。下次见面的时候，我希望你带着你的问题来。这次别睡着了。',
       summary: '你追出图书馆，丘成桐已经登上回哈佛的航班。失魂落魄之时，在篮球场边遇到了正在自学微分几何的蔡徐坤——他说想考研，你说我来教你。于是，在篮球与炸鸡的加持下，新的爱情故事开始了。'
+    },
+    ending_breakup: {
+      name: '火速分手',
+      quote: '我喜欢你。真的。但搞学问如果没有激情，就永远达不到做大学问的地步。而你……连我送你的书都没翻开过。',
+      summary: '你们约会了十七次，甜到清华和哈佛两边都在嗑。直到他让你解一道 Ricci 流，你答错了。他沉默了整整两分钟。后来他娶了一个能徒手解偏微分方程的博士后。你删了他的微信，又加回来，又删了。'
+    },
+    ending_almost: {
+      name: '恋爱未满',
+      quote: '我们之间还差那么一个维度。也许是时间。也许是别的东西。保持联系吧。',
+      summary: '喝过几次咖啡，聊得还行，但总差了点火花。他说庞加莱对偶需要完美拍档，缺一个维度美就不完整。你没听懂。后来你在知乎关注了他，他发科普文章你默默点赞——他没回关。也可能是太忙了。对吧？'
     },
   };
   return map[resolvedEnding] || map.ending_dream;
@@ -1309,10 +1354,12 @@ function generateShareCard() {
 
   // Ending name badge
   const badgeColors = {
-    '卡拉比-丘之约': ['#c9a96e', '🏆'],
+    '卡拉比-丘之约': ['#c9a96e', '💍'],
     '学术之路': ['#6b8cce', '📚'],
     '数学劝退': ['#999', '💻'],
     '黄粱一梦': ['#b496c9', '💫'],
+    '火速分手': ['#e8433d', '💔'],
+    '恋爱未满': ['#e8a87c', '💛'],
   };
   const badge = badgeColors[ending.name] || badgeColors['黄粱一梦'];
   ctx.fillStyle = badge[0]; ctx.font = 'bold 18px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
