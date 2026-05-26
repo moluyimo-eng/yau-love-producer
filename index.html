@@ -820,7 +820,7 @@ async function typeText(text, el) {
   el.classList.add('typing-cursor');
   for (let i = 0; i < text.length; i++) {
     el.textContent += text[i];
-    await sleep(text[i] === '\n' ? 70 : 20);
+    await sleep(text[i] === '\n' ? 150 : 45);
   }
   el.classList.remove('typing-cursor');
 }
