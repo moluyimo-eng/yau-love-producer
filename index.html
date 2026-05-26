@@ -1128,7 +1128,14 @@ function copyShareText() {
   ).then(() => toast('文案已复制！去知乎粘贴发布吧~'));
 }
 
-function goZhihu() { copyShareText(); window.open('https://www.zhihu.com/pin', '_blank'); }
+function goZhihu() {
+  copyShareText();
+  const ending = getEndingData();
+  const html = `<p>我在「丘成桐版恋与制作人」中达成了【${ending.name}】结局！</p><p>❤ 好感度: ${affection}/100 | 📐 数学: ${mathCorrect}/${mathTotal}</p><p>"${ending.quote}"</p><p>来试试你能拿下丘教授的芳心吗？<br>#丘成桐版恋与制作人 #Let's学习杯打卡挑战赛</p>`;
+  const content = encodeURIComponent(JSON.stringify({ html: html, meta: {} }));
+  window.open(`zhihu://community/short_pin_editor?tab=pin&content=${content}`, '_blank');
+  setTimeout(() => { window.open('https://www.zhihu.com/pin', '_blank'); }, 600);
+}
 
 function toast(msg) {
   const t = document.createElement('div');
